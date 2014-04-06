@@ -1,0 +1,74 @@
+{
+  "name": "mux-dmx",
+  "version": "0.0.1",
+  "description": "Multiple Duplex Streams across a single Duplex Stream.",
+  "keywords": [
+    "stream",
+    "multiplex",
+    "mux",
+    "dmx",
+    "demux"
+  ],
+  "repository" : {
+    "type" : "git", 
+    "url" : "https://github.com/RGBboy/mux-dmx.git"
+  },
+  "author": "RGBboy <l-_-l@rgbboy.com>",
+  "main": "index.js",
+  "engines": {
+    "node": ">=0.10.0"
+  },
+  "dependencies": {
+    "readable-stream": "1.0.x",
+    "multibuffer": "2.2.x"
+  },
+  "devDependencies": {
+    "tape": "*",
+    "testling": "*"
+  },
+  "testling": {
+    "files": [ "./test/*.spec.js"],
+    "browsers": [
+      "iexplore/9.0",
+      "iexplore/10.0",
+      "chrome/22.0",
+      "chrome/23.0",
+      "chrome/24.0",
+      "chrome/25.0",
+      "chrome/26.0",
+      "chrome/27.0",
+      "chrome/28.0",
+      "chrome/29.0",
+      "chrome/30.0",
+      "chrome/31.0",
+      "chrome/canary",
+      "firefox/16.0",
+      "firefox/17.0",
+      "firefox/18.0",
+      "firefox/19.0",
+      "firefox/20.0",
+      "firefox/21.0",
+      "firefox/22.0",
+      "firefox/23.0",
+      "firefox/24.0",
+      "firefox/25.0",
+      "firefox/nightly",
+      "opera/11.0",
+      "opera/11.5",
+      "opera/11.6",
+      "opera/12.0",
+      "opera/15.0",
+      "opera/16.0",
+      "opera/17.0",
+      "opera/next",
+      "iphone/6.0",
+      "ipad/6.0",
+      "safari/6.0",
+      "android-browser/4.2"
+    ]
+  },
+  "scripts": {
+    "test": "./node_modules/.bin/tape ./test/*.spec.js"
+  },
+  "license": "MIT"
+}
