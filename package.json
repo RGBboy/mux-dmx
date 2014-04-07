@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "readable-stream": "1.0.x",
+    "through2": "0.x.x",
     "multibuffer": "2.2.x"
   },
   "devDependencies": {

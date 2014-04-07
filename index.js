@@ -8,7 +8,7 @@
  */
 
 var MuxDmx,
-    Transform = require('readable-stream').Transform,
+    Through2 = require('through2'),
     Duplex = require('readable-stream').Duplex,
     multibuffer = require('multibuffer');
 
@@ -20,30 +20,11 @@ var MuxDmx,
  */
 MuxDmx = function () {
 
-  var self = Duplex(),
-      streams = {};
+  var self,
+      streams = {},
+      decode;
 
-  /**
-   * ._read
-   *
-   * @param {Number} size
-   * @return {undefined}
-   * @api private
-   */
-  self._read = function (size) {
-
-  };
-
-  /**
-   * ._write
-   *
-   * @param {Buffer|null} chunk
-   * @param {String} encoding
-   * @param {Function} next
-   * @return {undefined}
-   * @api private
-   */
-  self._write = function (chunk, encoding, next) {
+  decode = function (chunk, encoding, next) {
     // decode and direct chunk
     var unpacked = multibuffer.unpack(chunk),
         base64Id = unpacked[0].toString('base64');
@@ -52,6 +33,8 @@ MuxDmx = function () {
     };
     next();
   };
+
+  self = Through2(decode);
 
   /**
    * .stream
@@ -63,16 +46,15 @@ MuxDmx = function () {
    * @api public
    */
   self.stream = function (id) {
-    var base64Id = id.toString('base64');
+    var base64Id = id.toString('base64'),
+        encode;
     if (!streams[base64Id]) {
-      streams[base64Id] = new Duplex();
-      streams[base64Id]._read = function (size) {
-      };
-      streams[base64Id]._write = function (chunk, encoding, next) {
+      encode = function (chunk, encoding, next) {
         // push encoded chunk to mux demux
         self.push(multibuffer.pack([id, chunk]));
         next();
       };
+      streams[base64Id] = new Through2(encode);
     };
     return streams[base64Id];
   };
