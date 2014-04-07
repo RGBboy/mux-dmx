@@ -9,7 +9,6 @@
 
 var MuxDmx,
     Through2 = require('through2'),
-    Duplex = require('readable-stream').Duplex,
     multibuffer = require('multibuffer');
 
 /**
@@ -22,16 +21,38 @@ MuxDmx = function () {
 
   var self,
       streams = {},
-      decode;
+      decode,
+      chunks;
 
   decode = function (chunk, encoding, next) {
     // decode and direct chunk
-    var unpacked = multibuffer.unpack(chunk),
-        base64Id = unpacked[0].toString('base64');
-    if (streams[base64Id]) {
-      streams[base64Id].push(unpacked[1]);
+    if (chunks) {
+      chunk = Buffer.concat([chunks, chunk]);
     };
+    var partialId = multibuffer.readPartial(chunk),
+        partialData,
+        base64Id;
+
+    if (partialId && partialId[0] && partialId[1]) {
+      base64Id = partialId[0].toString('base64');
+      partialData = multibuffer.readPartial(partialId[1]);
+    };
+
+    if (partialData && partialData[0] && streams[base64Id]) {
+      streams[base64Id].push(partialData[0]);
+      chunks = null;
+      if (partialData[1]) {
+        decode(partialData[1], encoding, next);
+        return;
+      } else {
+        next();
+        return;
+      };
+    };
+
+    chunks = chunk;
     next();
+
   };
 
   self = Through2(decode);

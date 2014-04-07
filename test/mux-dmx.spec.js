@@ -114,3 +114,95 @@ test('piped muxdmx clients with same stream id should connect to each other', fu
 
   stream1B.write(new Buffer('testB'));
 });
+
+test('connected streams should work when data is clumped', function (t) {
+  setup(t);
+  t.plan(3);
+
+  var stream1A = client1.stream(new Buffer([0])),
+      stream2A = client2.stream(new Buffer([0])),
+      stream1B = client1.stream(new Buffer([1])),
+      stream2B = client2.stream(new Buffer([1])),
+      fired = 0,
+      chunks = [],
+      clumpStream = require('through2')(function (chunk, encoding, next) {
+        chunks.push(chunk);
+        next();
+      });
+
+  client1.pipe(clumpStream).pipe(client2);
+
+  stream2A.once('data', function (data) {
+    fired += 1;
+    t.equal(data.toString('utf-8'), 'testA');
+  });
+
+  stream2B.once('data', function (data) {
+    fired += 1;
+    t.equal(data.toString('utf-8'), 'testB');
+    t.equal(fired, 2);
+    teardown(t);
+    t.end();
+  });
+
+  stream1A.write(new Buffer('testA'));
+  stream1B.write(new Buffer('testB'));
+
+  process.nextTick(function () {
+    clumpStream.push(Buffer.concat(chunks));
+  });
+
+});
+
+test('connected streams should work when data is chunked', function (t) {
+  setup(t);
+  t.plan(3);
+
+  var stream1A = client1.stream(new Buffer([0])),
+      stream2A = client2.stream(new Buffer([0])),
+      stream1B = client1.stream(new Buffer([1])),
+      stream2B = client2.stream(new Buffer([1])),
+      fired = 0,
+      chunks = [],
+      sending = false,
+      i,
+      chunkStream = require('through2')(function (chunk, encoding, next) {
+        for (i = 0; i < chunk.length; i += 1) {
+          chunks.push(chunk.slice(i, i+1));
+        };
+        if (!sending) {
+          sendNextChunk();
+        };
+        next();
+      });
+
+  client1.pipe(chunkStream).pipe(client2);
+
+  stream2A.once('data', function (data) {
+    fired += 1;
+    t.equal(data.toString('utf-8'), 'testA');
+  });
+
+  stream2B.once('data', function (data) {
+    fired += 1;
+    t.equal(data.toString('utf-8'), 'testB');
+    t.equal(fired, 2);
+    teardown(t);
+    t.end();
+  });
+
+  stream1A.write(new Buffer('testA'));
+  stream1B.write(new Buffer('testB'));
+
+  function sendNextChunk () {
+    sending = true;
+    chunkStream.push(chunks.splice(0,1)[0]);
+    if (chunks.length > 0) {
+      process.nextTick(sendNextChunk);
+    } else {
+      sending = false;
+    };
+  };
+  
+
+});
