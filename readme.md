@@ -26,8 +26,8 @@ Multiple Duplex Streams across a single Duplex Stream.
     console.log(data.toString('utf-8')); // Beep
   });
 
-  stream1A.write(new Buffer('Beep'));
-  stream2A.write(new Buffer('Boop'));
+  stream1.write(new Buffer('Beep'));
+  stream2.write(new Buffer('Boop'));
 
 ```
 
