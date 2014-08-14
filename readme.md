@@ -19,15 +19,15 @@ Multiple Duplex Streams across a single Duplex Stream.
   client1.pipe(client2).pipe(client1);
 
   stream1.on('data', function (data) {
-    console.log(data.toString('utf-8')); // Boop
+    console.log(data.toString('utf8')); // Pong
   });
 
   stream2.on('data', function (data) {
-    console.log(data.toString('utf-8')); // Beep
+    console.log(data.toString('utf8')); // Ping
   });
 
-  stream1.write(new Buffer('Beep'));
-  stream2.write(new Buffer('Boop'));
+  stream1.write(new Buffer('Ping'));
+  stream2.write(new Buffer('Pong'));
 
 ```
 
