@@ -38,23 +38,25 @@ test('MuxDmx', function (t) {
 });
 
 /**
- * muxdmx.stream
+ * muxdmx.createDuplexStream
  */
  
-test('muxdmx.stream should be a function', function (t) {
+test('muxdmx.createDuplexStream should be a function', function (t) {
   setup(t);
   t.plan(1);
-  t.equal(typeof client1.stream, 'function');
+  t.equal(typeof client1.createDuplexStream, 'function');
   teardown(t);
 });
 
 test('muxdmx.stream should return a DuplexStream', function (t) {
   setup(t);
   t.plan(1);
-  var stream = client1.stream(new Buffer([0]));
+  var stream = client1.createDuplexStream(new Buffer([0]));
   t.equal(stream instanceof DuplexStream, true);
   teardown(t);
 });
+
+
 
 /**
  * muxdmx.hasStream
@@ -70,7 +72,7 @@ test('muxdmx.hasStream should be a function', function (t) {
 test('muxdmx.hasStream should return true if stream exists', function (t) {
   setup(t);
   t.plan(1);
-  client1.stream(new Buffer([0]));
+  client1.createDuplexStream(new Buffer([0]));
   t.equal(client1.hasStream(new Buffer([0])), true);
   teardown(t);
 });
@@ -83,16 +85,16 @@ test('muxdmx.hasStream should return false if stream does not exist', function (
 });
 
 /**
- * muxdmx.stream()
+ * muxdmx.createDuplexStream()
  */
 test('piped muxdmx clients with same stream id should connect to each other', function (t) {
   setup(t);
   t.plan(3);
 
-  var stream1A = client1.stream(new Buffer([0])),
-      stream2A = client2.stream(new Buffer([0])),
-      stream1B = client1.stream(new Buffer([1])),
-      stream2B = client2.stream(new Buffer([1])),
+  var stream1A = client1.createDuplexStream(new Buffer([0])),
+      stream2A = client2.createDuplexStream(new Buffer([0])),
+      stream1B = client1.createDuplexStream(new Buffer([1])),
+      stream2B = client2.createDuplexStream(new Buffer([1])),
       fired = 0;
 
   client1.pipe(client2).pipe(client1);
@@ -119,10 +121,10 @@ test('connected streams should work when data is clumped', function (t) {
   setup(t);
   t.plan(3);
 
-  var stream1A = client1.stream(new Buffer([0])),
-      stream2A = client2.stream(new Buffer([0])),
-      stream1B = client1.stream(new Buffer([1])),
-      stream2B = client2.stream(new Buffer([1])),
+  var stream1A = client1.createDuplexStream(new Buffer([0])),
+      stream2A = client2.createDuplexStream(new Buffer([0])),
+      stream1B = client1.createDuplexStream(new Buffer([1])),
+      stream2B = client2.createDuplexStream(new Buffer([1])),
       fired = 0,
       chunks = [],
       clumpStream = require('through2')(function (chunk, encoding, next) {
@@ -158,10 +160,10 @@ test('connected streams should work when data is chunked', function (t) {
   setup(t);
   t.plan(3);
 
-  var stream1A = client1.stream(new Buffer([0])),
-      stream2A = client2.stream(new Buffer([0])),
-      stream1B = client1.stream(new Buffer([1])),
-      stream2B = client2.stream(new Buffer([1])),
+  var stream1A = client1.createDuplexStream(new Buffer([0])),
+      stream2A = client2.createDuplexStream(new Buffer([0])),
+      stream1B = client1.createDuplexStream(new Buffer([1])),
+      stream2B = client2.createDuplexStream(new Buffer([1])),
       fired = 0,
       chunks = [],
       sending = false,

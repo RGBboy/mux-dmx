@@ -13,8 +13,8 @@ Multiple Duplex Streams across a single Duplex Stream.
 
   var client1 = MuxDmx(),
       client2 = MuxDmx(),
-      stream1 = client1.stream(new Buffer([0])),
-      stream2 = client2.stream(new Buffer([0])),
+      stream1 = client1.createDuplexStream(new Buffer([0])),
+      stream2 = client2.createDuplexStream(new Buffer([0])),
 
   client1.pipe(client2).pipe(client1);
 
@@ -35,7 +35,7 @@ Multiple Duplex Streams across a single Duplex Stream.
 
 * Return `Duplex` MuxDmx Stream
 
-## instance.stream(id)
+## instance.createDuplexStream(id)
 
 * id `Buffer`
 * Return `Duplex` Multiplexed Duplex Stream

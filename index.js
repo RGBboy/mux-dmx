@@ -58,7 +58,7 @@ MuxDmx = function () {
   self = Through2(decode);
 
   /**
-   * .stream
+   * .createDuplexStream
    *
    * creates and returns a stream
    *
@@ -66,7 +66,7 @@ MuxDmx = function () {
    * @return {Stream}
    * @api public
    */
-  self.stream = function (id) {
+  self.createDuplexStream = function (id) {
     var base64Id = id.toString('base64'),
         encode;
     if (!streams[base64Id]) {
