@@ -8,8 +8,9 @@
  */
 
 var MuxDmx,
-    Through2 = require('through2'),
-    multibuffer = require('multibuffer');
+    Stream = require('readable-stream'),
+    multibuffer = require('multibuffer'),
+    noop = function () {};
 
 /**
  * MuxDmx
@@ -35,12 +36,22 @@ MuxDmx = function () {
 
     if (partialId && partialId[0] && partialId[1]) {
       base64Id = partialId[0].toString('base64');
+      if (!streams[base64Id]) {
+        self.emit('error', new Error('Stream ' + base64Id + ' not found'));
+      };
       partialData = multibuffer.readPartial(partialId[1]);
     };
 
     if (partialData && partialData[0] && streams[base64Id]) {
-      streams[base64Id].push(partialData[0]);
-      chunks = null;
+      // if writable
+      if (streams[base64Id] instanceof Stream.Readable) {
+        streams[base64Id].push(partialData[0]);
+        chunks = null;
+      } else {
+        self.emit('error', new Error('Stream ' + base64Id + ' is not readable'));
+        chunks = null;
+      };
+
       if (partialData[1]) {
         decode(partialData[1], encoding, next);
         return;
@@ -55,15 +66,59 @@ MuxDmx = function () {
 
   };
 
-  self = Through2(decode);
+  self = new Stream.Duplex();
+  self._write = decode;
+  self._read = noop;
+
+  /**
+   * .createReadStream
+   *
+   * creates and returns a Readable Stream
+   *
+   * @param {Buffer} id
+   * @return {Stream.Readable}
+   * @api public
+   */
+  self.createReadStream = function (id) {
+    var base64Id = id.toString('base64');
+    if (!streams[base64Id]) {
+      streams[base64Id] = Stream.Readable();
+      streams[base64Id]._read = noop;
+      return streams[base64Id];
+    };
+  };
+
+  /**
+   * .createWriteStream
+   *
+   * creates and returns a Writable Stream
+   *
+   * @param {Buffer} id
+   * @return {Stream.Writable}
+   * @api public
+   */
+  self.createWriteStream = function (id) {
+    var base64Id = id.toString('base64'),
+        encode;
+    if (!streams[base64Id]) {
+      encode = function (chunk, encoding, next) {
+        // push encoded chunk to mux demux
+        self.push(multibuffer.pack([id, chunk]));
+        next();
+      };
+      streams[base64Id] = new Stream.Writable();
+      streams[base64Id]._write = encode;
+    };
+    return streams[base64Id];
+  };
 
   /**
    * .createDuplexStream
    *
-   * creates and returns a stream
+   * creates and returns a Duplex Stream
    *
    * @param {Buffer} id
-   * @return {Stream}
+   * @return {Stream.Duplex}
    * @api public
    */
   self.createDuplexStream = function (id) {
@@ -75,7 +130,9 @@ MuxDmx = function () {
         self.push(multibuffer.pack([id, chunk]));
         next();
       };
-      streams[base64Id] = new Through2(encode);
+      streams[base64Id] = new Stream.Duplex();
+      streams[base64Id]._write = encode;
+      streams[base64Id]._read = noop;
     };
     return streams[base64Id];
   };
