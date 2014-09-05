@@ -35,12 +35,28 @@ Multiple Duplex Streams across a single Duplex Stream.
 
 * Return `Duplex` MuxDmx Stream
 
+## instance.createReadStream(id)
+
+* id `Buffer`
+* Return `Readable Stream` Multiplexed Read Stream
+
+The id is received by the instance to distinguish the stream to push data to. The smaller the id, the smaller the framing sent.
+
+## instance.createWriteStream(id)
+
+* id `Buffer`
+* Return `Writable Stream` Multiplexed Writable Stream
+
+The id is sent down the wire to distinguish the stream on the other side. The smaller the id, the smaller the framing sent.
+
 ## instance.createDuplexStream(id)
 
 * id `Buffer`
 * Return `Duplex` Multiplexed Duplex Stream
 
-The id is sent down the wire to distinguish the stream on the other side. The smaller the id, the smaller the framing sent.
+# Errors
+
+`instance` will emit errors when it receives data that either has no defined stream or the stream with the id is only writable. This can be used as a security measure to close connections that are receiving unwanted data.
 
 # License 
 
