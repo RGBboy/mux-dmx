@@ -1,6 +1,6 @@
 {
   "name": "mux-dmx",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Multiple Duplex Streams across a single Duplex Stream.",
   "keywords": [
     "stream",
@@ -19,13 +19,13 @@
     "node": ">=0.10.0"
   },
   "dependencies": {
-    "through2": "0.x.x",
+    "readable-stream": "1.0.x",
     "multibuffer": "2.2.x"
   },
   "devDependencies": {
     "tape": "*",
     "testling": "*",
-    "readable-stream": "1.0.x"
+    "through2": "0.x.x"
   },
   "testling": {
     "files": [ "./test/*.spec.js"],
