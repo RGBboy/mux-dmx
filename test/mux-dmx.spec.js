@@ -9,6 +9,8 @@
 var test = require('tape'),
     DuplexStream = require('readable-stream').Duplex,
     MuxDmx = require('../index'),
+    ChunkStream = require('./helpers/chunk-stream'),
+    ClumpStream = require('./helpers/clump-stream'),
     client1,
     client2;
 
@@ -126,11 +128,7 @@ test('connected streams should work when data is clumped', function (t) {
       stream1B = client1.createDuplexStream(new Buffer([1])),
       stream2B = client2.createDuplexStream(new Buffer([1])),
       fired = 0,
-      chunks = [],
-      clumpStream = require('through2')(function (chunk, encoding, next) {
-        chunks.push(chunk);
-        next();
-      });
+      clumpStream = ClumpStream();
 
   client1.pipe(clumpStream).pipe(client2);
 
@@ -151,7 +149,7 @@ test('connected streams should work when data is clumped', function (t) {
   stream1B.write(new Buffer('testB'));
 
   process.nextTick(function () {
-    clumpStream.push(Buffer.concat(chunks));
+    clumpStream.flush();
   });
 
 });
@@ -165,18 +163,7 @@ test('connected streams should work when data is chunked', function (t) {
       stream1B = client1.createDuplexStream(new Buffer([1])),
       stream2B = client2.createDuplexStream(new Buffer([1])),
       fired = 0,
-      chunks = [],
-      sending = false,
-      i,
-      chunkStream = require('through2')(function (chunk, encoding, next) {
-        for (i = 0; i < chunk.length; i += 1) {
-          chunks.push(chunk.slice(i, i+1));
-        };
-        if (!sending) {
-          sendNextChunk();
-        };
-        next();
-      });
+      chunkStream = ChunkStream();
 
   client1.pipe(chunkStream).pipe(client2);
 
@@ -195,16 +182,5 @@ test('connected streams should work when data is chunked', function (t) {
 
   stream1A.write(new Buffer('testA'));
   stream1B.write(new Buffer('testB'));
-
-  function sendNextChunk () {
-    sending = true;
-    chunkStream.push(chunks.splice(0,1)[0]);
-    if (chunks.length > 0) {
-      process.nextTick(sendNextChunk);
-    } else {
-      sending = false;
-    };
-  };
-  
 
 });
